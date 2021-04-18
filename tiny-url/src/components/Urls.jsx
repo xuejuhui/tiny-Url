@@ -1,24 +1,30 @@
 import React from "react";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-
-import Grid from "@material-ui/core/Grid";
-
 import { Droppable, Draggable } from "react-beautiful-dnd";
+
+import DeleteIcon from "@material-ui/icons/Delete";
+import {
+  Grid,
+  IconButton,
+  ListItemText,
+  ListItem,
+  List,
+  Paper,
+  ListItemAvatar,
+  Avatar,
+} from "@material-ui/core";
 
 function Urls({ urls, deleteUrl }) {
   return (
-    <div>
-      <Grid item xs={12} md={6}>
-        <div>
+    <>
+      <Grid container item xs={12} spacing={1}>
+        <Grid item xs={12}>
           <Droppable droppableId="noGroupUrls">
             {(provided) => {
               return (
-                <div
+                <Paper
+                  elevation={3}
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  style={{ minHeight: "250px", background: "green" }}
                 >
                   {urls.map((url, index) => {
                     return (
@@ -34,15 +40,25 @@ function Urls({ urls, deleteUrl }) {
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
                             >
-                              <img src={url.favicons} alt="ss" />
-
+                              <ListItemAvatar>
+                                <Avatar alt={url.fullUrl} src={url.favicons} />
+                              </ListItemAvatar>
                               <ListItemText
                                 primary={url.shortUrl}
                                 secondary={url.fullUrl ? url?.fullUrl : null}
                               />
-                              <button onClick={() => deleteUrl(url.id)}>
-                                X
-                              </button>
+                              <IconButton aria-label="delete">
+                                <DeleteIcon />
+                              </IconButton>{" "}
+                              <IconButton aria-label="delete">
+                                <DeleteIcon />
+                              </IconButton>
+                              <IconButton
+                                aria-label="delete"
+                                onClick={() => deleteUrl(url.id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
                             </ListItem>
                           )}
                         </Draggable>
@@ -50,13 +66,13 @@ function Urls({ urls, deleteUrl }) {
                     );
                   })}
                   {provided.placeholder}
-                </div>
+                </Paper>
               );
             }}
           </Droppable>
-        </div>
+        </Grid>
       </Grid>
-    </div>
+    </>
   );
 }
 export default Urls;

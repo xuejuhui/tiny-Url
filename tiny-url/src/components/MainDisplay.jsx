@@ -1,5 +1,4 @@
 import { Grid } from "@material-ui/core";
-import axios from "axios";
 
 import React, { useEffect, useState } from "react";
 import Urls from "./Urls";
@@ -8,53 +7,50 @@ import { DragDropContext } from "react-beautiful-dnd";
 import UrlForm from "./UrlForm";
 import GroupForm from "./GroupForm";
 
+import {
+  getNoGroupUrls,
+  addNewUrl,
+  deleteUrlById,
+  patchUrl,
+} from "../api/urlRequest";
+import {
+  getGroupUrls,
+  addNewGroup,
+  deleteGroupById,
+} from "../api/groupRequest";
+
 function MainDisplay() {
   const [urls, setUrls] = useState([]);
   const [groups, setGroups] = useState([]);
-  console.log(urls);
+
   useEffect(() => {
-    axios
-      .get("/api/urls")
-      .then(async ({ data }) => {
-        const newData = data.map((url) => {
-          return {
-            ...url,
-            favicons: `https://www.google.com/s2/favicons?sz=32&domain_url=${url.fullUrl}`,
-          };
-        });
-        setUrls(newData);
-      })
-      .catch((err) => console.log(err));
+    const getUrls = async () => {
+      try {
+        const urls = await getNoGroupUrls();
+        setUrls(urls);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getUrls();
   }, []);
 
   useEffect(() => {
-    axios
-      .get("/api/groups")
-      .then(({ data }) => {
-        const newData = data.map((group) => {
-          const newUrls = group.urls?.map((url) => {
-            return {
-              ...url,
-              favicons: `https://www.google.com/s2/favicons?sz=32&domain_url=${url.fullUrl}`,
-            };
-          });
-          return { ...group, urls: newUrls };
-        });
-        setGroups(newData);
-      })
-      .catch((err) => console.log(err));
+    const getGroup = async () => {
+      try {
+        const groups = await getGroupUrls();
+        setGroups(groups);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getGroup();
   }, []);
 
   const addUrl = async (values) => {
     try {
-      const { data } = await axios.post("/api/urls", { ...values });
-      setUrls((prev) => [
-        ...prev,
-        {
-          ...data,
-          favicons: `https://www.google.com/s2/favicons?sz=32&domain_url=${data.fullUrl}`,
-        },
-      ]);
+      const newUrl = await addNewUrl(values);
+      setUrls((prev) => [...prev, newUrl]);
     } catch (error) {
       console.log(error);
     }
@@ -62,7 +58,7 @@ function MainDisplay() {
 
   const addGroup = async (values) => {
     try {
-      const { data } = await axios.post("/api/groups", { ...values });
+      const data = await addNewGroup(values);
       setGroups((prev) => [...prev, { ...data, urls: [] }]);
     } catch (error) {
       console.log(error);
@@ -71,9 +67,9 @@ function MainDisplay() {
 
   const deleteGroup = async (id) => {
     try {
-      const { data } = await axios.delete(`/api/groups/${id}`);
+      const data = deleteGroupById(id);
       if (data) {
-        const deletedGroup = groups.find((group) => group.id == id);
+        const deletedGroup = groups.find((group) => group.id === Number(id));
         setGroups((prev) =>
           [...prev]?.filter((group) => {
             return group.id !== id;
@@ -88,7 +84,7 @@ function MainDisplay() {
 
   const deleteUrl = async (id, groupId = null) => {
     try {
-      const { data } = await axios.delete(`/api/urls/${id}`);
+      const data = await deleteUrlById(id);
       if (data) {
         if (!groupId) {
           const newUrls = urls.filter((url) => url.id !== id);
@@ -113,7 +109,7 @@ function MainDisplay() {
   const findArray = (id) => {
     let array;
     if (id !== "noGroupUrls") {
-      const group = groups.find((group) => group.id == id);
+      const group = groups.find((group) => group.id === Number(id));
       array = group.urls;
     } else {
       array = urls;
@@ -121,13 +117,12 @@ function MainDisplay() {
     return [...array];
   };
 
-  const updateUrl = async (urlId, groupId) => {
-    await axios.patch(`/api/urls/${urlId}`, { groupId });
+  const updateUrlGroup = async (urlId, groupId) => {
+    const formatGroupId = groupId === "noGroupUrls" ? null : groupId;
+    await patchUrl(urlId, { groupId: formatGroupId });
   };
-  console.log(groups);
   const onDragEnd = async (result) => {
     const { source, destination } = result;
-    console.log(source, destination);
     // dropped outside the list
     if (!destination) {
       return;
@@ -139,10 +134,10 @@ function MainDisplay() {
       sourceArray.splice(destination.index, 0, removed);
       if (source.droppableId === "noGroupUrls") setUrls(sourceArray);
       if (source.droppableId !== "noGroupUrls") {
+        console.log(source.droppableId);
         const newGroups = [...groups];
         const groupIndex = newGroups.findIndex((group) => {
-          console.log(group.id, source.droppableId);
-          return group.id == source.droppableId;
+          return group.id === Number(source.droppableId);
         });
         newGroups[groupIndex] = { ...newGroups[groupIndex], urls: sourceArray };
         setGroups(newGroups);
@@ -151,8 +146,7 @@ function MainDisplay() {
       const sourceArray = findArray(source.droppableId);
       const destinationArray = findArray(destination.droppableId);
       const [removed] = sourceArray.splice(source.index, 1);
-      console.log(removed);
-      await updateUrl(removed.id, destination.droppableId);
+      await updateUrlGroup(removed.id, destination.droppableId);
 
       destinationArray.splice(destination.index, 0, removed);
       if (source.droppableId === "noGroupUrls") setUrls(sourceArray);
@@ -160,9 +154,10 @@ function MainDisplay() {
       if (source.droppableId !== "noGroupUrls") {
         setGroups((prevGroup) => {
           const newGroups = [...prevGroup];
+          console.log(typeof source.droppableId);
 
           const groupIndex = newGroups.findIndex(
-            (group) => group.id == source.droppableId
+            (group) => group.id === Number(source.droppableId)
           );
           newGroups[groupIndex] = {
             ...newGroups[groupIndex],
@@ -176,7 +171,7 @@ function MainDisplay() {
           const newGroups = [...prevGroup];
 
           const groupIndex = newGroups.findIndex(
-            (group) => group.id == destination.droppableId
+            (group) => group.id === Number(destination.droppableId)
           );
           newGroups[groupIndex] = {
             ...newGroups[groupIndex],
@@ -189,34 +184,55 @@ function MainDisplay() {
   };
 
   return (
-    <Grid container direction="row" justify="center" alignItems="center">
-      <Grid item xs={6}>
-        <UrlForm addUrl={addUrl} />
-        <GroupForm addGroup={addGroup} />
-      </Grid>
+    <div style={{ margin: "20px 0" }}>
+      <Grid container direction="row" justify="center" alignItems="center">
+        <Grid item xs={4}>
+          <UrlForm addUrl={addUrl} />
+          <GroupForm addGroup={addGroup} />
+        </Grid>
 
-      <Grid
-        item
-        xs={6}
-        container
-        direction="row"
-        justify="center"
-        alignItems="center"
-      >
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Grid item xs={6}>
-            <Urls urls={urls} deleteUrl={deleteUrl} />
-          </Grid>
-          <Grid item xs={6}>
-            <Group
-              groups={groups}
-              deleteGroup={deleteGroup}
-              deleteUrl={deleteUrl}
-            />
-          </Grid>
-        </DragDropContext>
+        <Grid
+          item
+          xs={8}
+          container
+          direction="row"
+          justify="center"
+          alignItems="center"
+        >
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Grid
+              container
+              item
+              xs={12}
+              md={4}
+              direction="row"
+              justify="center"
+              alignItems="center"
+              spacing={2}
+            >
+              <Urls urls={urls} deleteUrl={deleteUrl} />
+            </Grid>
+
+            <Grid
+              container
+              item
+              xs={12}
+              md={8}
+              direction="row"
+              justify="center"
+              alignItems="center"
+              spacing={2}
+            >
+              <Group
+                groups={groups}
+                deleteGroup={deleteGroup}
+                deleteUrl={deleteUrl}
+              />
+            </Grid>
+          </DragDropContext>
+        </Grid>
       </Grid>
-    </Grid>
+    </div>
   );
 }
 

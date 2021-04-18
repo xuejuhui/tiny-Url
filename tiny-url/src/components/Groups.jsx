@@ -1,56 +1,49 @@
-import React, { useEffect, useState } from "react";
-
-import axios from "axios";
-import { makeStyles } from "@material-ui/core/styles";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-
-import { Redirect } from "react-router-dom";
-
-import Grid from "@material-ui/core/Grid";
-import Typography from "@material-ui/core/Typography";
-
+import React from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-    maxWidth: 752,
-  },
-  demo: {
-    backgroundColor: theme.palette.background.paper,
-  },
-  title: {
-    margin: theme.spacing(4, 0, 2),
-  },
-}));
-
-const colors = ["#ff0000", "#00ff00", "#0000ff"];
+import DeleteIcon from "@material-ui/icons/Delete";
+import {
+  Grid,
+  IconButton,
+  ListItemText,
+  ListItem,
+  List,
+  Paper,
+  Typography,
+  ListItemAvatar,
+  Avatar,
+} from "@material-ui/core";
 
 function Groups({ groups, deleteGroup, deleteUrl }) {
-  const classes = useStyles();
-
   return (
-    <div>
+    <>
       {groups.map((group) => {
         return (
-          <Grid item xs={12} md={6} key={group.id}>
-            <Typography variant="h6" className={classes.title}>
-              {group.name}
-              {group.id}
-            </Typography>
-            <button onClick={() => deleteGroup(group.id)}>X</button>
-            <div className={classes.demo}>
+          <Grid container item xs={12} md={6} key={group.id} spacing={1}>
+            <Grid item xs={12}>
+              <Paper elevation={3}>
+                <Typography variant="body">
+                  {group.name}
+                  {group.id}
+                </Typography>
+
+                <IconButton
+                  aria-label="delete"
+                  onClick={() => deleteGroup(group.id)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Paper>
+            </Grid>
+            <Grid item xs={12}>
               <Droppable droppableId={`${group.id}`}>
                 {(provided) => {
-                  const random_color =
-                    colors[Math.floor(Math.random() * colors.length)];
                   return (
-                    <div
+                    <Paper
+                      elevation={3}
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      style={{ minHeight: "250px", background: random_color }}
+                      style={{ minHeight: "250px" }}
                     >
                       {group.urls?.map((link, index) => {
                         return (
@@ -66,7 +59,12 @@ function Groups({ groups, deleteGroup, deleteUrl }) {
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                 >
-                                  <img src={link.favicons} alt="ss" />
+                                  <ListItemAvatar>
+                                    <Avatar
+                                      alt={link.fullUrl}
+                                      src={link.favicons}
+                                    />
+                                  </ListItemAvatar>
 
                                   <ListItemText
                                     primary={link.shortUrl}
@@ -74,11 +72,12 @@ function Groups({ groups, deleteGroup, deleteUrl }) {
                                       link.fullUrl ? link?.fullUrl : null
                                     }
                                   />
-                                  <button
+                                  <IconButton
+                                    aria-label="delete"
                                     onClick={() => deleteUrl(link.id, group.id)}
                                   >
-                                    X
-                                  </button>
+                                    <DeleteIcon />
+                                  </IconButton>
                                 </ListItem>
                               )}
                             </Draggable>
@@ -86,15 +85,15 @@ function Groups({ groups, deleteGroup, deleteUrl }) {
                         );
                       })}
                       {provided.placeholder}
-                    </div>
+                    </Paper>
                   );
                 }}
               </Droppable>
-            </div>
+            </Grid>
           </Grid>
         );
       })}
-    </div>
+    </>
   );
 }
 export default Groups;

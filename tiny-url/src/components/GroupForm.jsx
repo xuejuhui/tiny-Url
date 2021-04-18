@@ -2,8 +2,9 @@ import React from "react";
 import { TextField } from "formik-material-ui";
 import { makeStyles } from "@material-ui/core/styles";
 import { Formik, Field, Form } from "formik";
-import { FormGroup } from "@material-ui/core";
+import { FormGroup, Button } from "@material-ui/core";
 
+import SaveIcon from "@material-ui/icons/Save";
 import * as Yup from "yup";
 
 const GroupSchema = Yup.object().shape({
@@ -48,7 +49,14 @@ function GroupForm({ addGroup }) {
             />
           </FormGroup>
           <FormGroup row className={classes.root}>
-            <button type="submit">Submit</button>
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              endIcon={<SaveIcon />}
+            >
+              Submit
+            </Button>
           </FormGroup>
         </Form>
       </Formik>
