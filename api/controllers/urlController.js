@@ -2,10 +2,15 @@ const db = require("../models/index");
 
 exports.createTinyUrl = async (req, res, next) => {
   try {
-    const tinyUrl = await db.Url.create(req.body);
     console.log(req.body);
-    console.log(tinyUrl);
-    res.status(201).json(tinyUrl);
+    const result = await db.sequelize.transaction(async (transaction) => {
+      const tinyUrl = await db.Url.create(req.body, {
+        transaction,
+      });
+
+      return tinyUrl;
+    });
+    res.status(201).json(result);
   } catch (error) {
     next(error);
   }
@@ -13,7 +18,21 @@ exports.createTinyUrl = async (req, res, next) => {
 
 exports.getTinyUrls = async (req, res, next) => {
   try {
-    const tinyUrl = await db.Url.findAll({ include: "group" });
+    const tinyUrls = await db.Url.findAll({
+      where: { groupId: null },
+    });
+    res.status(201).json(tinyUrls);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getTinyUrl = async (req, res, next) => {
+  try {
+    const { shortUrl } = req.params;
+    const tinyUrl = await db.Url.findOne({
+      where: { shortUrl },
+    });
     res.status(201).json(tinyUrl);
   } catch (error) {
     next(error);
@@ -28,6 +47,27 @@ exports.deleteTinyUrl = async (req, res, next) => {
       },
     });
     if (deleted) {
+      return res.status(201).json({ success: true });
+    }
+    throw new Error("Url not found");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateTinyUrl = async (req, res, next) => {
+  try {
+    const { groupId } = req.body;
+    const { id } = req.params;
+
+    const result = await db.sequelize.transaction(async (transaction) => {
+      const updated = await db.Url.update(
+        { groupId },
+        { transaction, where: { id } }
+      );
+      return updated;
+    });
+    if (result) {
       return res.status(201).json({ success: true });
     }
     throw new Error("Url not found");

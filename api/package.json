@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon ./bin/www",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon ./bin/www",
+    "client": "cd ../tiny-url && npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -18,6 +20,7 @@
     "shortid": "^2.2.16"
   },
   "devDependencies": {
+    "concurrently": "^6.0.2",
     "sequelize-cli": "^6.2.0"
   }
 }

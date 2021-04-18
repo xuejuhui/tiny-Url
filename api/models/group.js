@@ -10,8 +10,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       this.hasMany(models.Url, {
-        foreignKey: "id",
-        as: "url",
+        foreignKey: "groupId",
+        as: "urls",
+        onDelete: "SET NULL",
+        hooks: true,
       });
     }
   }

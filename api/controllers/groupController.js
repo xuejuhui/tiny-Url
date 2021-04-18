@@ -1,3 +1,5 @@
+const db = require("../models/index");
+
 exports.createGroup = async (req, res, next) => {
   try {
     const tinyUrl = await db.Group.create(req.body);
@@ -9,7 +11,8 @@ exports.createGroup = async (req, res, next) => {
 
 exports.getGroups = async (req, res, next) => {
   try {
-    const tinyUrl = await db.Group.findAll({ include: "url" });
+    const tinyUrl = await db.Group.findAll({ include: "urls" });
+    console.log(tinyUrl);
     res.status(201).json(tinyUrl);
   } catch (error) {
     next(error);
