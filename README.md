@@ -1,5 +1,8 @@
 # tinyUrl
 
+https://tiny-urls-rabeast.herokuapp.com/ - Link!
+[TinyUrl](https://tiny-urls-rabeast.herokuapp.com/)
+
 **Non-Functional Requirements:**
 
 1. The system should be highly available. This is required because, if our service is down, all the URL redirections will start failing. An explanation for how to achieve this will suffice.
