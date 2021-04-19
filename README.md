@@ -11,3 +11,7 @@
 2. URL redirection should happen in real-time with minimal latency.
 
    - To reduce the latency use redis for caching and it will improve the latency. "Not implement yet"
+
+3. Add features that you think will improve upon the basic implementation. Make sure to explain them.
+
+   - Added Grouping feature, User can create a group and drag and drop url to the group. When group is delete all the urls will return to main section
