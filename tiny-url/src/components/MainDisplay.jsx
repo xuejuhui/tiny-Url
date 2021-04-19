@@ -20,14 +20,15 @@ import {
 } from "../api/groupRequest";
 
 function MainDisplay() {
-  const [urls, setUrls] = useState([]);
-  const [groups, setGroups] = useState([]);
+  const [groupOfUrls, setGroupOfUrls] = useState({ urls: [], groups: [] });
 
   useEffect(() => {
     const getUrls = async () => {
       try {
         const urls = await getNoGroupUrls();
-        setUrls(urls);
+        setGroupOfUrls((prev) => {
+          return { ...prev, urls };
+        });
       } catch (error) {
         console.log(error);
       }
@@ -39,7 +40,9 @@ function MainDisplay() {
     const getGroup = async () => {
       try {
         const groups = await getGroupUrls();
-        setGroups(groups);
+        setGroupOfUrls((prev) => {
+          return { ...prev, groups };
+        });
       } catch (error) {
         console.log(error);
       }
@@ -47,21 +50,40 @@ function MainDisplay() {
     getGroup();
   }, []);
 
-  const addUrl = async (values) => {
+  const addUrl = async (
+    { shortUrl, alias, ...rest },
+    { setSubmitting, setErrors, resetForm }
+  ) => {
     try {
-      const newUrl = await addNewUrl(values);
-      setUrls((prev) => [...prev, newUrl]);
+      const fields = { ...rest };
+      if (shortUrl) {
+        fields.shortUrl = shortUrl;
+      }
+      if (alias) {
+        fields.alias = alias;
+      }
+      const newUrl = await addNewUrl(fields);
+      resetForm({});
+      setGroupOfUrls((prev) => {
+        return { ...prev, urls: [...prev.urls, newUrl] };
+      });
     } catch (error) {
-      console.log(error);
+      console.log(error, error.message);
+      setSubmitting(false);
+      setErrors({ submit: error.message });
     }
   };
 
-  const addGroup = async (values) => {
+  const addGroup = async (values, { setSubmitting, setErrors, resetForm }) => {
     try {
       const data = await addNewGroup(values);
-      setGroups((prev) => [...prev, { ...data, urls: [] }]);
+      resetForm({});
+      setGroupOfUrls((prev) => {
+        return { ...prev, groups: [...prev.groups, { ...data, urls: [] }] };
+      });
     } catch (error) {
-      console.log(error);
+      setSubmitting(false);
+      setErrors({ submit: error.message });
     }
   };
 
@@ -69,13 +91,26 @@ function MainDisplay() {
     try {
       const data = deleteGroupById(id);
       if (data) {
-        const deletedGroup = groups.find((group) => group.id === Number(id));
-        setGroups((prev) =>
-          [...prev]?.filter((group) => {
-            return group.id !== id;
-          })
+        const deletedGroup = groupOfUrls.groups?.find(
+          (group) => group.id === Number(id)
         );
-        setUrls((prev) => [...prev, ...deletedGroup.urls]);
+
+        setGroupOfUrls((prev) => {
+          return {
+            ...prev,
+            groups: [...prev.groups].filter((group) => {
+              return group.id !== id;
+            }),
+            urls: [...prev.urls, ...deletedGroup.urls],
+          };
+        });
+
+        // setGroups((prev) =>
+        //   [...prev]?.filter((group) => {
+        //     return group.id !== id;
+        //   })
+        // );
+        // setUrls((prev) => [...prev, ...deletedGroup.urls]);
       }
     } catch (error) {
       console.log(error);
@@ -87,18 +122,22 @@ function MainDisplay() {
       const data = await deleteUrlById(id);
       if (data) {
         if (!groupId) {
-          const newUrls = urls.filter((url) => url.id !== id);
-          setUrls(newUrls);
+          const newUrls = groupOfUrls.urls.filter((url) => url.id !== id);
+          setGroupOfUrls((prev) => {
+            return { ...prev, urls: newUrls };
+          });
         } else {
-          const groupIndex = groups.findIndex((group) => {
+          const groupIndex = groupOfUrls.groups?.findIndex((group) => {
             return group.id === groupId;
           });
-          const newGroup = [...groups];
+          const newGroup = [...groupOfUrls?.groups];
           const newUrls = newGroup[groupIndex].urls?.filter(
             (url) => url.id !== id
           );
           newGroup[groupIndex].urls = newUrls;
-          setGroups(newGroup);
+          setGroupOfUrls((prev) => {
+            return { ...prev, groups: newGroup };
+          });
         }
       }
     } catch (error) {
@@ -109,10 +148,10 @@ function MainDisplay() {
   const findArray = (id) => {
     let array;
     if (id !== "noGroupUrls") {
-      const group = groups.find((group) => group.id === Number(id));
+      const group = groupOfUrls.groups.find((group) => group.id === Number(id));
       array = group.urls;
     } else {
-      array = urls;
+      array = groupOfUrls.urls;
     }
     return [...array];
   };
@@ -132,15 +171,23 @@ function MainDisplay() {
       const sourceArray = findArray(source.droppableId);
       const [removed] = sourceArray.splice(source.index, 1);
       sourceArray.splice(destination.index, 0, removed);
-      if (source.droppableId === "noGroupUrls") setUrls(sourceArray);
-      if (source.droppableId !== "noGroupUrls") {
-        console.log(source.droppableId);
-        const newGroups = [...groups];
-        const groupIndex = newGroups.findIndex((group) => {
-          return group.id === Number(source.droppableId);
+      if (source.droppableId === "noGroupUrls") {
+        setGroupOfUrls((prev) => {
+          return { ...prev, urls: sourceArray };
         });
-        newGroups[groupIndex] = { ...newGroups[groupIndex], urls: sourceArray };
-        setGroups(newGroups);
+      }
+      if (source.droppableId !== "noGroupUrls") {
+        setGroupOfUrls((prev) => {
+          const newGroups = [...prev.groups];
+          const groupIndex = newGroups.findIndex((group) => {
+            return group.id === Number(source.droppableId);
+          });
+          newGroups[groupIndex] = {
+            ...newGroups[groupIndex],
+            urls: sourceArray,
+          };
+          return { ...prev, groups: newGroups };
+        });
       }
     } else {
       const sourceArray = findArray(source.droppableId);
@@ -149,12 +196,15 @@ function MainDisplay() {
       await updateUrlGroup(removed.id, destination.droppableId);
 
       destinationArray.splice(destination.index, 0, removed);
-      if (source.droppableId === "noGroupUrls") setUrls(sourceArray);
-      if (destination.droppableId === "noGroupUrls") setUrls(destinationArray);
+
+      if (source.droppableId === "noGroupUrls") {
+        setGroupOfUrls((prev) => {
+          return { ...prev, urls: sourceArray };
+        });
+      }
       if (source.droppableId !== "noGroupUrls") {
-        setGroups((prevGroup) => {
-          const newGroups = [...prevGroup];
-          console.log(typeof source.droppableId);
+        setGroupOfUrls((prev) => {
+          const newGroups = [...prev.groups];
 
           const groupIndex = newGroups.findIndex(
             (group) => group.id === Number(source.droppableId)
@@ -163,12 +213,18 @@ function MainDisplay() {
             ...newGroups[groupIndex],
             urls: sourceArray,
           };
-          return newGroups;
+          return { ...prev, groups: newGroups };
         });
       }
+      if (destination.droppableId === "noGroupUrls") {
+        setGroupOfUrls((prev) => {
+          return { ...prev, urls: destinationArray };
+        });
+      }
+
       if (destination.droppableId !== "noGroupUrls") {
-        setGroups((prevGroup) => {
-          const newGroups = [...prevGroup];
+        setGroupOfUrls((prev) => {
+          const newGroups = [...prev.groups];
 
           const groupIndex = newGroups.findIndex(
             (group) => group.id === Number(destination.droppableId)
@@ -177,7 +233,7 @@ function MainDisplay() {
             ...newGroups[groupIndex],
             urls: destinationArray,
           };
-          return newGroups;
+          return { ...prev, groups: newGroups };
         });
       }
     }
@@ -186,14 +242,19 @@ function MainDisplay() {
   return (
     <div style={{ margin: "20px 0" }}>
       <Grid container direction="row" justify="center" alignItems="center">
-        <Grid item xs={4}>
-          <UrlForm addUrl={addUrl} />
-          <GroupForm addGroup={addGroup} />
+        <Grid container item md={12} lg={4} spacing={2}>
+          <Grid item xs={12} sm={6} lg={12}>
+            <UrlForm addUrl={addUrl} />
+          </Grid>
+          <Grid item xs={12} sm={6} lg={12}>
+            <GroupForm addGroup={addGroup} />
+          </Grid>
         </Grid>
 
         <Grid
           item
-          xs={8}
+          md={12}
+          lg={8}
           container
           direction="row"
           justify="center"
@@ -203,28 +264,24 @@ function MainDisplay() {
             <Grid
               container
               item
-              xs={12}
-              md={4}
               direction="row"
               justify="center"
               alignItems="center"
               spacing={2}
             >
-              <Urls urls={urls} deleteUrl={deleteUrl} />
+              <Urls urls={groupOfUrls.urls} deleteUrl={deleteUrl} />
             </Grid>
 
             <Grid
               container
               item
-              xs={12}
-              md={8}
               direction="row"
               justify="center"
               alignItems="center"
               spacing={2}
             >
               <Group
-                groups={groups}
+                groups={groupOfUrls.groups}
                 deleteGroup={deleteGroup}
                 deleteUrl={deleteUrl}
               />

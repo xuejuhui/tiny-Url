@@ -2,7 +2,7 @@ import React from "react";
 import { TextField } from "formik-material-ui";
 import { makeStyles } from "@material-ui/core/styles";
 import { Formik, Field, Form } from "formik";
-import { FormGroup, Button } from "@material-ui/core";
+import { FormGroup, Button, Paper, Grid } from "@material-ui/core";
 
 import SaveIcon from "@material-ui/icons/Save";
 import * as Yup from "yup";
@@ -28,38 +28,40 @@ function GroupForm({ addGroup }) {
 
   return (
     <>
-      <Formik
-        initialValues={{
-          name: "",
-        }}
-        validationSchema={GroupSchema}
-        onSubmit={addGroup}
-      >
-        <Form className={classes.root}>
-          <FormGroup row className={classes.root}>
-            <Field
-              component={TextField}
-              name="name"
-              type="text"
-              label="Group Name"
-              variant="outlined"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </FormGroup>
-          <FormGroup row className={classes.root}>
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              endIcon={<SaveIcon />}
-            >
-              Submit
-            </Button>
-          </FormGroup>
-        </Form>
-      </Formik>
+      <Grid container direction="row" justify="center" alignItems="center">
+        <Grid item xs={6}>
+          <Formik
+            initialValues={{
+              name: "",
+            }}
+            validationSchema={GroupSchema}
+            onSubmit={addGroup}
+          >
+            <Paper elevation={3} style={{ minWidth: "240px" }}>
+              <Form className={classes.root} style={{ padding: ".5em" }}>
+                <Field
+                  component={TextField}
+                  name="name"
+                  type="text"
+                  label="Group Name"
+                  variant="outlined"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  endIcon={<SaveIcon />}
+                >
+                  Submit
+                </Button>
+              </Form>
+            </Paper>
+          </Formik>
+        </Grid>
+      </Grid>
     </>
   );
 }

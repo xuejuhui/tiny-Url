@@ -18,10 +18,10 @@
     "express": "^4.17.1",
     "mysql2": "^2.2.5",
     "sequelize": "^6.6.2",
+    "sequelize-cli": "^6.2.0",
     "shortid": "^2.2.16"
   },
   "devDependencies": {
-    "concurrently": "^6.0.2",
-    "sequelize-cli": "^6.2.0"
+    "concurrently": "^6.0.2"
   }
 }

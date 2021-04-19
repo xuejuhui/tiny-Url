@@ -5,7 +5,7 @@ import MainDisplay from "./MainDisplay";
 
 function Main() {
   return (
-    <div>
+    <div style={{ overflowX: "hidden" }}>
       <AppBar />
       <MainDisplay />
     </div>

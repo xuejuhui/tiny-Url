@@ -75,3 +75,23 @@ exports.updateTinyUrl = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.addTinyUrlCounter = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const result = await db.sequelize.transaction(async (transaction) => {
+      const updated = await db.Url.increment(
+        { counter: +1 },
+        { where: { id }, transaction }
+      );
+      return updated;
+    });
+    if (result) {
+      return res.status(201).json({ success: true });
+    }
+    throw new Error("Url not found");
+  } catch (error) {
+    next(error);
+  }
+};

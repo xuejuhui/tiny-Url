@@ -1,7 +1,7 @@
 import React from "react";
 import { TextField } from "formik-material-ui";
 import { makeStyles } from "@material-ui/core/styles";
-import { FormGroup, Button } from "@material-ui/core";
+import { Button, Paper, Grid } from "@material-ui/core";
 import SaveIcon from "@material-ui/icons/Save";
 
 import { Formik, Field, Form } from "formik";
@@ -21,7 +21,7 @@ const UrlSchema = Yup.object().shape({
 const useStyles = makeStyles((theme) => ({
   root: {
     "& > *": {
-      margin: theme.spacing(1),
+      margin: theme.spacing(2),
       width: "25ch",
     },
   },
@@ -32,61 +32,63 @@ function UrlForm({ addUrl }) {
 
   return (
     <>
-      <Formik
-        initialValues={{
-          fullUrl: "",
-          shortUrl: "",
-          alias: "",
-        }}
-        validationSchema={UrlSchema}
-        onSubmit={addUrl}
-      >
-        <Form className={classes.root}>
-          <FormGroup row className={classes.root}>
-            <Field
-              component={TextField}
-              name="fullUrl"
-              type="text"
-              label="Full Url"
-              variant="outlined"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-            <Field
-              component={TextField}
-              name="shortUrl"
-              type="text"
-              label="Short Url"
-              variant="outlined"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
+      <Grid container direction="row" justify="center" alignItems="center">
+        <Grid item xs={6}>
+          <Formik
+            initialValues={{
+              fullUrl: "",
+              shortUrl: "",
+              alias: "",
+            }}
+            validationSchema={UrlSchema}
+            onSubmit={addUrl}
+          >
+            <Paper elevation={3} style={{ minWidth: "240px" }}>
+              <Form className={classes.root} style={{ padding: ".5em" }}>
+                <Field
+                  component={TextField}
+                  name="fullUrl"
+                  type="text"
+                  label="Full Url"
+                  variant="outlined"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+                <Field
+                  component={TextField}
+                  name="shortUrl"
+                  type="text"
+                  label="Short Url"
+                  variant="outlined"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
 
-            <Field
-              component={TextField}
-              name="alias"
-              type="text"
-              label="Alias"
-              variant="outlined"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </FormGroup>
-          <FormGroup row className={classes.root}>
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              endIcon={<SaveIcon />}
-            >
-              Submit
-            </Button>
-          </FormGroup>
-        </Form>
-      </Formik>
+                <Field
+                  component={TextField}
+                  name="alias"
+                  type="text"
+                  label="Alias"
+                  variant="outlined"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  endIcon={<SaveIcon />}
+                >
+                  Submit
+                </Button>
+              </Form>
+            </Paper>
+          </Formik>
+        </Grid>
+      </Grid>
     </>
   );
 }

@@ -31,3 +31,8 @@ export const patchUrl = async (id, fields) => {
   const { data } = await axios.patch(`/api/urls/${id}`, fields);
   return data;
 };
+
+export const incrementUrlCounter = async (id) => {
+  const { data } = await axios.patch(`/api/urls/${id}/count`);
+  return data;
+};

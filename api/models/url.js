@@ -19,6 +19,8 @@ module.exports = (sequelize, DataTypes) => {
       fullUrl: DataTypes.STRING,
       shortUrl: { type: DataTypes.STRING, defaultValue: shortid.generate },
       groupId: DataTypes.INTEGER,
+      counter: { type: DataTypes.INTEGER, defaultValue: 0 },
+
       alias: DataTypes.STRING,
     },
     {

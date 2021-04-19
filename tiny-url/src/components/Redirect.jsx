@@ -1,19 +1,22 @@
 import React, { useEffect } from "react";
 import axios from "axios";
 import { useParams, useHistory } from "react-router-dom";
+import { incrementUrlCounter } from "../api/urlRequest";
 
 function Redirect() {
   let { shortUrl } = useParams();
   const history = useHistory();
-  console.log(history);
   useEffect(() => {
     const fetchData = async () => {
       await axios
         .get(`/api/urls/${shortUrl}`)
-        .then(({ data }) => {
+        .then(async ({ data }) => {
           console.log(data);
           if (data?.fullUrl) {
+            await incrementUrlCounter(data?.id);
             window.location = `//${data?.fullUrl}`;
+          } else {
+            history.push("/");
           }
         })
         .catch((err) => {
@@ -21,8 +24,8 @@ function Redirect() {
         });
     };
     fetchData();
-  }, [shortUrl]);
-  return <div></div>;
+  }, [shortUrl, history]);
+  return <></>;
 }
 
 export default Redirect;

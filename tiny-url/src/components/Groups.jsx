@@ -1,7 +1,10 @@
 import React from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
+import { useHistory } from "react-router-dom";
 
 import DeleteIcon from "@material-ui/icons/Delete";
+import FileCopyIcon from "@material-ui/icons/FileCopy";
+import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import {
   Grid,
   IconButton,
@@ -12,9 +15,18 @@ import {
   Typography,
   ListItemAvatar,
   Avatar,
+  Tooltip,
 } from "@material-ui/core";
 
 function Groups({ groups, deleteGroup, deleteUrl }) {
+  const history = useHistory();
+  const copiedToClipboard = (shortURL) => {
+    navigator.clipboard.writeText(`${window.location.host}/${shortURL}`);
+  };
+  const goesTo = (shortURL) => {
+    history.push({ pathname: shortURL });
+  };
+  console.log();
   return (
     <>
       {groups.map((group) => {
@@ -22,7 +34,7 @@ function Groups({ groups, deleteGroup, deleteUrl }) {
           <Grid container item xs={12} md={6} key={group.id} spacing={1}>
             <Grid item xs={12}>
               <Paper elevation={3}>
-                <Typography variant="body">
+                <Typography variant="body1">
                   {group.name}
                   {group.id}
                 </Typography>
@@ -67,17 +79,42 @@ function Groups({ groups, deleteGroup, deleteUrl }) {
                                   </ListItemAvatar>
 
                                   <ListItemText
-                                    primary={link.shortUrl}
-                                    secondary={
-                                      link.fullUrl ? link?.fullUrl : null
-                                    }
+                                    primary={link.alias || link.shortUrl}
+                                    secondary={link.fullUrl || null}
                                   />
-                                  <IconButton
-                                    aria-label="delete"
-                                    onClick={() => deleteUrl(link.id, group.id)}
-                                  >
-                                    <DeleteIcon />
-                                  </IconButton>
+                                  <ListItemText
+                                    primary="Redirected"
+                                    secondary={link.counter}
+                                  />
+                                  <Tooltip title="Go To">
+                                    <IconButton
+                                      aria-label="redirect"
+                                      onClick={() => goesTo(link?.shortUrl)}
+                                    >
+                                      <ExitToAppIcon />
+                                    </IconButton>
+                                  </Tooltip>
+
+                                  <Tooltip title="copy">
+                                    <IconButton
+                                      aria-label="copy"
+                                      onClick={() =>
+                                        copiedToClipboard(link?.shortUrl)
+                                      }
+                                    >
+                                      <FileCopyIcon />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="delete">
+                                    <IconButton
+                                      aria-label="delete"
+                                      onClick={() =>
+                                        deleteUrl(link.id, group.id)
+                                      }
+                                    >
+                                      <DeleteIcon />
+                                    </IconButton>
+                                  </Tooltip>
                                 </ListItem>
                               )}
                             </Draggable>
