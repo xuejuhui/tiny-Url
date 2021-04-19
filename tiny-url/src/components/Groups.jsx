@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import DeleteIcon from "@material-ui/icons/Delete";
 import { Grid, IconButton, Paper, Typography } from "@material-ui/core";
@@ -38,4 +38,4 @@ function Groups({ groups, deleteGroup, deleteUrl }) {
     </>
   );
 }
-export default Groups;
+export default memo(Groups);

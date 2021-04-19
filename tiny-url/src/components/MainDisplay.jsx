@@ -193,36 +193,10 @@ function MainDisplay() {
       const sourceArray = findArray(source.droppableId);
       const destinationArray = findArray(destination.droppableId);
       const [removed] = sourceArray.splice(source.index, 1);
-      await updateUrlGroup(removed.id, destination.droppableId);
 
       destinationArray.splice(destination.index, 0, removed);
 
       if (source.droppableId === "noGroupUrls") {
-        setGroupOfUrls((prev) => {
-          return { ...prev, urls: sourceArray };
-        });
-      }
-      if (source.droppableId !== "noGroupUrls") {
-        setGroupOfUrls((prev) => {
-          const newGroups = [...prev.groups];
-
-          const groupIndex = newGroups.findIndex(
-            (group) => group.id === Number(source.droppableId)
-          );
-          newGroups[groupIndex] = {
-            ...newGroups[groupIndex],
-            urls: sourceArray,
-          };
-          return { ...prev, groups: newGroups };
-        });
-      }
-      if (destination.droppableId === "noGroupUrls") {
-        setGroupOfUrls((prev) => {
-          return { ...prev, urls: destinationArray };
-        });
-      }
-
-      if (destination.droppableId !== "noGroupUrls") {
         setGroupOfUrls((prev) => {
           const newGroups = [...prev.groups];
 
@@ -233,9 +207,36 @@ function MainDisplay() {
             ...newGroups[groupIndex],
             urls: destinationArray,
           };
-          return { ...prev, groups: newGroups };
+          return { urls: sourceArray, groups: newGroups };
         });
       }
+      if (source.droppableId !== "noGroupUrls") {
+        setGroupOfUrls((prev) => {
+          const newGroups = [...prev.groups];
+          let newUrls = [...prev.urls];
+
+          const sourceIndex = newGroups.findIndex(
+            (group) => group.id === Number(source.droppableId)
+          );
+          const desinationIndex = newGroups.findIndex(
+            (group) => group.id === Number(destination.droppableId)
+          );
+          newGroups[sourceIndex] = {
+            ...newGroups[sourceIndex],
+            urls: sourceArray,
+          };
+          if (desinationIndex !== -1) {
+            newGroups[desinationIndex] = {
+              ...newGroups[desinationIndex],
+              urls: destinationArray,
+            };
+          } else {
+            newUrls = destinationArray;
+          }
+          return { urls: newUrls, groups: newGroups };
+        });
+      }
+      await updateUrlGroup(removed.id, destination.droppableId);
     }
   };
 
@@ -264,6 +265,7 @@ function MainDisplay() {
             <Grid
               container
               item
+              xs={6}
               direction="row"
               justify="center"
               alignItems="center"

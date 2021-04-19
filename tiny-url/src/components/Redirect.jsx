@@ -14,7 +14,10 @@ function Redirect() {
           console.log(data);
           if (data?.fullUrl) {
             await incrementUrlCounter(data?.id);
-            window.location = `//${data?.fullUrl}`;
+            if (data?.fullUrl.includes("http")) {
+              return (window.location = data?.fullUrl);
+            }
+            return (window.location = "//" + data?.fullUrl);
           } else {
             history.push("/");
           }

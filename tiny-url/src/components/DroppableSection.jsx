@@ -1,6 +1,5 @@
 import React from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
-import { useHistory } from "react-router-dom";
 
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -18,13 +17,12 @@ import {
 } from "@material-ui/core";
 
 function DroppableSection({ droppableId, urls, deleteUrl }) {
-  const history = useHistory();
-
   const copiedToClipboard = (shortURL) => {
     navigator.clipboard.writeText(`${window.location.host}/${shortURL}`);
   };
   const goesTo = (shortURL) => {
-    history.push({ pathname: shortURL });
+    const win = window.open(shortURL, "_blank");
+    win.focus();
   };
 
   return (
@@ -58,10 +56,11 @@ function DroppableSection({ droppableId, urls, deleteUrl }) {
                           primary={url.alias || url.shortUrl}
                           secondary={
                             <>
-                              <Typography variant="body1">
+                              <Typography component="span" variant="body1">
                                 {url.fullUrl || null}
                               </Typography>
-                              <Typography variant="caption">
+                              <br />
+                              <Typography component="span" variant="caption">
                                 {`Redirected: ${url.counter}`}
                               </Typography>
                             </>
