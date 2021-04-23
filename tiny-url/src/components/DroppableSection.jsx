@@ -87,7 +87,9 @@ function DroppableSection({ droppableId, urls, deleteUrl }) {
                         <Tooltip title="delete">
                           <IconButton
                             aria-label="delete"
-                            onClick={() => deleteUrl(url.id)}
+                            onClick={() =>
+                              deleteUrl(url.id, Number(droppableId))
+                            }
                           >
                             <DeleteIcon />
                           </IconButton>
